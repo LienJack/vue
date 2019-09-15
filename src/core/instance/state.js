@@ -47,34 +47,34 @@ export function proxy (target: Object, sourceKey: string, key: string) {
 
 export function initState (vm: Component) {
   vm._watchers = []
-  const opts = vm.$options
-  if (opts.props) initProps(vm, opts.props)
-  if (opts.methods) initMethods(vm, opts.methods)
+  const opts = vm.$options // 读取配置
+  if (opts.props) initProps(vm, opts.props) // 初始化props
+  if (opts.methods) initMethods(vm, opts.methods) // 初始化methode
   if (opts.data) {
-    initData(vm)
+    initData(vm) // 初始化data
   } else {
     observe(vm._data = {}, true /* asRootData */)
   }
-  if (opts.computed) initComputed(vm, opts.computed)
+  if (opts.computed) initComputed(vm, opts.computed) // 初始化computed
   if (opts.watch && opts.watch !== nativeWatch) {
-    initWatch(vm, opts.watch)
+    initWatch(vm, opts.watch) // 初始化watch
   }
 }
 
 function initProps (vm: Component, propsOptions: Object) {
-  const propsData = vm.$options.propsData || {}
-  const props = vm._props = {}
+  const propsData = vm.$options.propsData || {} // 读取通过父级组件或则用户通过propsData的props
+  const props = vm._props = {} // 最终保存props的地方
   // cache prop keys so that future props updates can iterate using Array
   // instead of dynamic object key enumeration.
-  const keys = vm.$options._propKeys = []
-  const isRoot = !vm.$parent
+  const keys = vm.$options._propKeys = [] // 存放props的key，用于遍历
+  const isRoot = !vm.$parent // 是否是根组件
   // root instance props should be converted
   if (!isRoot) {
-    toggleObserving(false)
+    toggleObserving(false) // 确定是否变成响应数据
   }
   for (const key in propsOptions) {
     keys.push(key)
-    const value = validateProp(key, propsOptions, propsData, vm)
+    const value = validateProp(key, propsOptions, propsData, vm) // 数据校验 
     /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {
       const hyphenatedKey = hyphenate(key)
@@ -97,22 +97,22 @@ function initProps (vm: Component, propsOptions: Object) {
         }
       })
     } else {
-      defineReactive(props, key, value)
+      defineReactive(props, key, value) // 数据响应化
     }
     // static props are already proxied on the component's prototype
     // during Vue.extend(). We only need to proxy props defined at
     // instantiation here.
     if (!(key in vm)) {
-      proxy(vm, `_props`, key)
+      proxy(vm, `_props`, key) // 开启代理
     }
   }
   toggleObserving(true)
 }
-
+// 初始化data
 function initData (vm: Component) {
   let data = vm.$options.data
-  data = vm._data = typeof data === 'function'
-    ? getData(data, vm)
+  data = vm._data = typeof data === 'function' // 判断是否方法，用于闭包复用
+    ? getData(data, vm) // 获取data的数据，处理错误
     : data || {}
   if (!isPlainObject(data)) {
     data = {}
@@ -128,6 +128,7 @@ function initData (vm: Component) {
   const methods = vm.$options.methods
   let i = keys.length
   while (i--) {
+    // 判断是否在method有冲突key
     const key = keys[i]
     if (process.env.NODE_ENV !== 'production') {
       if (methods && hasOwn(methods, key)) {
@@ -137,6 +138,7 @@ function initData (vm: Component) {
         )
       }
     }
+    // 判断是否在props有冲突
     if (props && hasOwn(props, key)) {
       process.env.NODE_ENV !== 'production' && warn(
         `The data property "${key}" is already declared as a prop. ` +
@@ -144,6 +146,7 @@ function initData (vm: Component) {
         vm
       )
     } else if (!isReserved(key)) {
+      
       proxy(vm, `_data`, key)
     }
   }
@@ -168,7 +171,7 @@ const computedWatcherOptions = { lazy: true }
 
 function initComputed (vm: Component, computed: Object) {
   // $flow-disable-line
-  const watchers = vm._computedWatchers = Object.create(null)
+  const watchers = vm._computedWatchers = Object.create(null) // 用于保存使用watch的实例
   // computed properties are just getters during SSR
   const isSSR = isServerRendering()
 
@@ -263,6 +266,7 @@ function initMethods (vm: Component, methods: Object) {
   const props = vm.$options.props
   for (const key in methods) {
     if (process.env.NODE_ENV !== 'production') {
+      // 验证是否是方法
       if (typeof methods[key] !== 'function') {
         warn(
           `Method "${key}" has type "${typeof methods[key]}" in the component definition. ` +
@@ -270,12 +274,14 @@ function initMethods (vm: Component, methods: Object) {
           vm
         )
       }
+      // props是否有在props声明过
       if (props && hasOwn(props, key)) {
         warn(
           `Method "${key}" has already been defined as a prop.`,
           vm
         )
       }
+      // 验证是否使用_,$ 开头
       if ((key in vm) && isReserved(key)) {
         warn(
           `Method "${key}" conflicts with an existing Vue instance method. ` +
@@ -283,6 +289,7 @@ function initMethods (vm: Component, methods: Object) {
         )
       }
     }
+    // 将方法挂着在vm中
     vm[key] = typeof methods[key] !== 'function' ? noop : bind(methods[key], vm)
   }
 }

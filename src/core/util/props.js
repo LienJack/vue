@@ -17,15 +17,15 @@ type PropOptions = {
   required: ?boolean,
   validator: ?Function
 };
-
+// 获取父级和用户设置的props -》 对Boolean进行处理 -》 处理默认值 -》 数据响应绑定 -》 验证props类型
 export function validateProp (
-  key: string,
-  propOptions: Object,
-  propsData: Object,
-  vm?: Component
+  key: string, //propOprions 属性名
+  propOptions: Object, // 子组件用户设置props
+  propsData: Object, // 父组件或用户设置props
+  vm?: Component // this
 ): any {
-  const prop = propOptions[key]
-  const absent = !hasOwn(propsData, key)
+  const prop = propOptions[key] // 保存当前Key的value
+  const absent = !hasOwn(propsData, key) // 当前用户提供的props选项是否存在
   let value = propsData[key]
   // boolean casting
   const booleanIndex = getTypeIndex(Boolean, prop.type)
@@ -118,11 +118,13 @@ function assertProp (
   let valid = !type || type === true
   const expectedTypes = []
   if (type) {
+    // 将非数组转换成数组
     if (!Array.isArray(type)) {
       type = [type]
     }
+
     for (let i = 0; i < type.length && !valid; i++) {
-      const assertedType = assertType(value, type[i])
+      const assertedType = assertType(value, type[i]) // 校验类型返回 { valid：true， expectedType: "Boolean"}
       expectedTypes.push(assertedType.expectedType || '')
       valid = assertedType.valid
     }
@@ -135,7 +137,7 @@ function assertProp (
     )
     return
   }
-  const validator = prop.validator
+  const validator = prop.validator // 执行自设校验
   if (validator) {
     if (!validator(value)) {
       warn(
