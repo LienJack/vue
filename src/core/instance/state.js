@@ -175,8 +175,8 @@ function initComputed (vm: Component, computed: Object) {
   // computed properties are just getters during SSR
   const isSSR = isServerRendering()
 
-  for (const key in computed) {
-    const userDef = computed[key]
+  for (const key in computed) { 
+    const userDef = computed[key] // 保存自定义计算属性
     const getter = typeof userDef === 'function' ? userDef : userDef.get
     if (process.env.NODE_ENV !== 'production' && getter == null) {
       warn(
@@ -187,6 +187,7 @@ function initComputed (vm: Component, computed: Object) {
 
     if (!isSSR) {
       // create internal watcher for the computed property.
+      // 创建computer的wather
       watchers[key] = new Watcher(
         vm,
         getter || noop,
@@ -198,7 +199,7 @@ function initComputed (vm: Component, computed: Object) {
     // component-defined computed properties are already defined on the
     // component prototype. We only need to define computed properties defined
     // at instantiation here.
-    if (!(key in vm)) {
+    if (!(key in vm)) { // 判断是否key有冲突
       defineComputed(vm, key, userDef)
     } else if (process.env.NODE_ENV !== 'production') {
       if (key in vm.$data) {
@@ -209,19 +210,27 @@ function initComputed (vm: Component, computed: Object) {
     }
   }
 }
-
+/**
+ * 总结：
+ * computed本质上是读watcher的value
+ * 如果依赖发生变化 -》 通知computer的watcher =》 watcher的dirty变成true -》
+ * 通知视图重新刷新-》 视图读取computer -》 重新计计算computed -》 watcher的dirty变成false
+ *  
+ */
 export function defineComputed (
   target: any,
   key: string,
   userDef: Object | Function
 ) {
-  const shouldCache = !isServerRendering()
-  if (typeof userDef === 'function') {
+  const shouldCache = !isServerRendering() // 是否服务器渲染
+  // 处理是函数
+  if (typeof userDef === 'function') { 
     sharedPropertyDefinition.get = shouldCache
       ? createComputedGetter(key)
       : createGetterInvoker(userDef)
     sharedPropertyDefinition.set = noop
   } else {
+    // 处理是对象的时候
     sharedPropertyDefinition.get = userDef.get
       ? shouldCache && userDef.cache !== false
         ? createComputedGetter(key)
@@ -240,16 +249,16 @@ export function defineComputed (
   }
   Object.defineProperty(target, key, sharedPropertyDefinition)
 }
-
+// 处理Computed的getter
 function createComputedGetter (key) {
   return function computedGetter () {
     const watcher = this._computedWatchers && this._computedWatchers[key]
     if (watcher) {
-      if (watcher.dirty) {
-        watcher.evaluate()
+      if (watcher.dirty) { // 用来判断是否更新
+        watcher.evaluate() // 立刻刷新
       }
       if (Dep.target) {
-        watcher.depend()
+        watcher.depend() // 添加到依赖
       }
       return watcher.value
     }
@@ -297,7 +306,7 @@ function initMethods (vm: Component, methods: Object) {
 function initWatch (vm: Component, watch: Object) {
   for (const key in watch) {
     const handler = watch[key]
-    if (Array.isArray(handler)) {
+    if (Array.isArray(handler)) {// 处理数组情况
       for (let i = 0; i < handler.length; i++) {
         createWatcher(vm, key, handler[i])
       }
