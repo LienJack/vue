@@ -33,9 +33,10 @@ export function initExtend (Vue: GlobalAPI) {
     const Sub = function VueComponent (options) {
       this._init(options)
     }
-    Sub.prototype = Object.create(Super.prototype)
+    Sub.prototype = Object.create(Super.prototype) // 继承全部vue原型
     Sub.prototype.constructor = Sub
-    Sub.cid = cid++
+    Sub.cid = cid++ // 唯一标识
+    // 参数合并
     Sub.options = mergeOptions(
       Super.options,
       extendOptions
@@ -46,10 +47,10 @@ export function initExtend (Vue: GlobalAPI) {
     // the Vue instances at extension time, on the extended prototype. This
     // avoids Object.defineProperty calls for each instance created.
     if (Sub.options.props) {
-      initProps(Sub)
+      initProps(Sub) // 将key代理到原型链上 vm._props.name -> vm.name
     }
     if (Sub.options.computed) {
-      initComputed(Sub)
+      initComputed(Sub) // 同上
     }
 
     // allow further extension/mixin/plugin usage
@@ -90,6 +91,6 @@ function initProps (Comp) {
 function initComputed (Comp) {
   const computed = Comp.options.computed
   for (const key in computed) {
-    defineComputed(Comp.prototype, key, computed[key])
+    defineComputed(Comp.prototype, key, computed[key]) // 定义computer，绑定watcher
   }
 }
