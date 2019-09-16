@@ -295,29 +295,32 @@ export function validateComponentName (name: string) {
  * Ensure all props option syntax are normalized into the
  * Object-based format.
  */
+// 整理props
 function normalizeProps (options: Object, vm: ?Component) {
   const props = options.props
   if (!props) return
   const res = {}
   let i, val, name
+  // 数组处理
   if (Array.isArray(props)) {
     i = props.length
     while (i--) {
       val = props[i]
       if (typeof val === 'string') {
-        name = camelize(val)
+        name = camelize(val) // 驼峰化a-b -> aB
         res[name] = { type: null }
       } else if (process.env.NODE_ENV !== 'production') {
         warn('props must be strings when using array syntax.')
       }
     }
+    // 处理对象
   } else if (isPlainObject(props)) {
     for (const key in props) {
       val = props[key]
-      name = camelize(key)
+      name = camelize(key) // 驼峰化
       res[name] = isPlainObject(val)
-        ? val
-        : { type: val }
+        ? val // 对象类型
+        : { type: val } // 基础类型
     }
   } else if (process.env.NODE_ENV !== 'production') {
     warn(
