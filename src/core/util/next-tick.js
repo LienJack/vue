@@ -5,9 +5,9 @@ import { noop } from 'shared/util'
 import { handleError } from './error'
 import { isIE, isIOS, isNative } from './env'
 
-const callbacks = []
-let pending = false
-
+const callbacks = [] // 存储用户注册回调
+let pending = false // 是否有可以添加到队列
+// 执行全部的注册回调事件
 function flushCallbacks () {
   pending = false
   const copies = callbacks.slice(0)
@@ -37,6 +37,7 @@ let timerFunc
 // completely stops working after triggering a few times... so, if native
 // Promise is available, we will use it:
 /* istanbul ignore next, $flow-disable-line */
+// 如果有promise
 if (typeof Promise !== 'undefined' && isNative(Promise)) {
   const p = Promise.resolve()
   timerFunc = () => {

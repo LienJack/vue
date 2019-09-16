@@ -15,7 +15,7 @@ export function initEvents (vm: Component) {
   // init parent attached events
   const listeners = vm.$options._parentListeners // 当全部子组件实例化，事件会存放在这里
   if (listeners) {
-    updateComponentListeners(vm, listeners)
+    updateComponentListeners(vm, listeners) // 将parentListeners使用的$on注册到events
   }
 }
 
@@ -53,11 +53,13 @@ export function eventsMixin (Vue: Class<Component>) {
   const hookRE = /^hook:/
   Vue.prototype.$on = function (event: string | Array<string>, fn: Function): Component {
     const vm: Component = this
+    // 事件组拆分
     if (Array.isArray(event)) {
       for (let i = 0, l = event.length; i < l; i++) {
         vm.$on(event[i], fn)
       }
     } else {
+      // 存放事件
       (vm._events[event] || (vm._events[event] = [])).push(fn)
       // optimize hook:event cost by using a boolean flag marked at registration
       // instead of a hash lookup
@@ -82,11 +84,13 @@ export function eventsMixin (Vue: Class<Component>) {
   Vue.prototype.$off = function (event?: string | Array<string>, fn?: Function): Component {
     const vm: Component = this
     // all
+    // 出国没有参数移除全部
     if (!arguments.length) {
       vm._events = Object.create(null)
       return vm
     }
     // array of events
+    // 移除数组
     if (Array.isArray(event)) {
       for (let i = 0, l = event.length; i < l; i++) {
         vm.$off(event[i], fn)
@@ -94,15 +98,18 @@ export function eventsMixin (Vue: Class<Component>) {
       return vm
     }
     // specific event
+    // 移除
     const cbs = vm._events[event]
     if (!cbs) {
       return vm
     }
+    // 如果没有指明特定的事件，就全部移除
     if (!fn) {
       vm._events[event] = null
       return vm
     }
     // specific handler
+    // 移除特定的事件
     let cb
     let i = cbs.length
     while (i--) {

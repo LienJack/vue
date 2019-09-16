@@ -19,9 +19,9 @@ export function initExtend (Vue: GlobalAPI) {
   Vue.extend = function (extendOptions: Object): Function {
     extendOptions = extendOptions || {}
     const Super = this
-    const SuperId = Super.cid
+    const SuperId = Super.cid // 父类ID
     const cachedCtors = extendOptions._Ctor || (extendOptions._Ctor = {})
-    if (cachedCtors[SuperId]) {
+    if (cachedCtors[SuperId]) { // 缓存
       return cachedCtors[SuperId]
     }
 
