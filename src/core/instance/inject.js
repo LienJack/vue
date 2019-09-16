@@ -14,7 +14,7 @@ export function initProvide (vm: Component) {
 }
 
 export function initInjections (vm: Component) {
-  const result = resolveInject(vm.$options.inject, vm)
+  const result = resolveInject(vm.$options.inject, vm) // 从底部到父级找provide,把结果存起来
   if (result) {
     toggleObserving(false)
     Object.keys(result).forEach(key => {
@@ -29,7 +29,7 @@ export function initInjections (vm: Component) {
           )
         })
       } else {
-        defineReactive(vm, key, result[key])
+        defineReactive(vm, key, result[key]) // 绑定
       }
     })
     toggleObserving(true)
@@ -51,6 +51,7 @@ export function resolveInject (inject: any, vm: Component): ?Object {
       const provideKey = inject[key].from
       let source = vm
       while (source) {
+        // 判断是否有__provided
         if (source._provided && hasOwn(source._provided, provideKey)) {
           result[key] = source._provided[provideKey]
           break
@@ -60,7 +61,7 @@ export function resolveInject (inject: any, vm: Component): ?Object {
       if (!source) {
         if ('default' in inject[key]) {
           const provideDefault = inject[key].default
-          result[key] = typeof provideDefault === 'function'
+          result[key] = typeof provideDefault === 'function' // 如果是方法就执行获取结果
             ? provideDefault.call(vm)
             : provideDefault
         } else if (process.env.NODE_ENV !== 'production') {

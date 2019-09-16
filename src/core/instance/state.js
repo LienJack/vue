@@ -44,12 +44,13 @@ export function proxy (target: Object, sourceKey: string, key: string) {
   }
   Object.defineProperty(target, key, sharedPropertyDefinition)
 }
-
+// 数据初始化
 export function initState (vm: Component) {
   vm._watchers = []
   const opts = vm.$options
   if (opts.props) initProps(vm, opts.props)
   if (opts.methods) initMethods(vm, opts.methods)
+  // 判读是否有data，没有就空对象
   if (opts.data) {
     initData(vm)
   } else {
@@ -109,11 +110,19 @@ function initProps (vm: Component, propsOptions: Object) {
   toggleObserving(true)
 }
 
+// 初始化data
+// 根据 vm.$options.data 选项获取真正想要的数据（注意：此时 vm.$options.data 是函数）
+// 校验得到的数据是否是一个纯对象
+// 检查数据对象 data 上的键是否与 props 对象上的键冲突
+// 检查 methods 对象上的键是否与 data 对象上的键冲突
+// 在 Vue 实例对象上添加代理访问数据对象的同名属性
+// 最后调用 observe 函数开启响应式之路
 function initData (vm: Component) {
-  let data = vm.$options.data
+  let data = vm.$options.data //从配置获取数据
   data = vm._data = typeof data === 'function'
-    ? getData(data, vm)
+    ? getData(data, vm) // 通过调用 data 选项从而获取数据对象
     : data || {}
+    // 判断是否最终是个对象
   if (!isPlainObject(data)) {
     data = {}
     process.env.NODE_ENV !== 'production' && warn(
@@ -123,13 +132,14 @@ function initData (vm: Component) {
     )
   }
   // proxy data on instance
-  const keys = Object.keys(data)
+  const keys = Object.keys(data) // 获取全部的key
   const props = vm.$options.props
   const methods = vm.$options.methods
   let i = keys.length
   while (i--) {
     const key = keys[i]
     if (process.env.NODE_ENV !== 'production') {
+      // methods 上面有data一样的key报错
       if (methods && hasOwn(methods, key)) {
         warn(
           `Method "${key}" has already been defined as a data property.`,
@@ -137,13 +147,17 @@ function initData (vm: Component) {
         )
       }
     }
+    // props上面有data的值会报错
     if (props && hasOwn(props, key)) {
       process.env.NODE_ENV !== 'production' && warn(
         `The data property "${key}" is already declared as a prop. ` +
         `Use prop default value instead.`,
         vm
       )
+      // 该条件的意思是判断定义在 data 中的 key 是否是保留键
+      // 判断一个字符串的第一个字符是不是 $ 或 _ 来决定其是否是保留的
     } else if (!isReserved(key)) {
+      // 代理把 vm._data.a -> vm.a
       proxy(vm, `_data`, key)
     }
   }
@@ -341,7 +355,7 @@ export function stateMixin (Vue: Class<Component>) {
 
   Vue.prototype.$set = set
   Vue.prototype.$delete = del
-
+  // $watch的挂载
   Vue.prototype.$watch = function (
     expOrFn: string | Function,
     cb: any,
@@ -354,8 +368,10 @@ export function stateMixin (Vue: Class<Component>) {
     options = options || {}
     options.user = true
     const watcher = new Watcher(vm, expOrFn, cb, options)
+    // 如果是立刻执行，就会在视图刷新之前获取过去缓存值
     if (options.immediate) {
       try {
+        // 获取过去缓存值
         cb.call(vm, watcher.value)
       } catch (error) {
         handleError(error, vm, `callback for immediate watcher "${watcher.expression}"`)

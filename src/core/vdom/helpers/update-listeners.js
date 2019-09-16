@@ -49,7 +49,7 @@ export function createFnInvoker (fns: Function | Array<Function>, vm: ?Component
   invoker.fns = fns
   return invoker
 }
-
+// 更新事件做对比
 export function updateListeners (
   on: Object,
   oldOn: Object,
@@ -59,16 +59,17 @@ export function updateListeners (
   vm: Component
 ) {
   let name, def, cur, old, event
+  // 遍历新的，看看哪些新增
   for (name in on) {
     def = cur = on[name]
     old = oldOn[name]
-    event = normalizeEvent(name)
+    event = normalizeEvent(name) //解析修饰符
     /* istanbul ignore if */
     if (__WEEX__ && isPlainObject(def)) {
       cur = def.handler
       event.params = def.params
     }
-    if (isUndef(cur)) {
+    if (isUndef(cur)) { // 判断undefined或者null
       process.env.NODE_ENV !== 'production' && warn(
         `Invalid handler for event "${event.name}": got ` + String(cur),
         vm
@@ -86,6 +87,7 @@ export function updateListeners (
       on[name] = old
     }
   }
+  // 看看旧，哪些要删除
   for (name in oldOn) {
     if (isUndef(on[name])) {
       event = normalizeEvent(name)

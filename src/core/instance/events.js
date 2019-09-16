@@ -8,12 +8,12 @@ import {
   invokeWithErrorHandling
 } from '../util/index'
 import { updateListeners } from '../vdom/helpers/index'
-
+// 初始化事件
 export function initEvents (vm: Component) {
-  vm._events = Object.create(null)
+  vm._events = Object.create(null) // 保存全部vm.$on
   vm._hasHookEvent = false
   // init parent attached events
-  const listeners = vm.$options._parentListeners
+  const listeners = vm.$options._parentListeners // 当全部子组件实例化，事件会存放在这里
   if (listeners) {
     updateComponentListeners(vm, listeners)
   }

@@ -65,12 +65,12 @@ export default class Watcher {
       this.deep = this.user = this.lazy = this.sync = false
     }
     this.cb = cb
-    this.id = ++uid // uid for batching
+    this.id = ++uid // 记录watcher唯一标识
     this.active = true
     this.dirty = this.lazy // for lazy watchers
-    this.deps = []
+    this.deps = [] //订阅了哪些dep
     this.newDeps = []
-    this.depIds = new Set()
+    this.depIds = new Set() // 去重后的哪些dep
     this.newDepIds = new Set()
     this.expression = process.env.NODE_ENV !== 'production'
       ? expOrFn.toString()

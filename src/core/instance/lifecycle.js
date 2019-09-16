@@ -28,21 +28,24 @@ export function setActiveInstance(vm: Component) {
     activeInstance = prevActiveInstance
   }
 }
-
+//
 export function initLifecycle (vm: Component) {
   const options = vm.$options
 
   // locate first non-abstract parent
   let parent = options.parent
   if (parent && !options.abstract) {
+    // 如果没有抽象
     while (parent.$options.abstract && parent.$parent) {
+      // 父级组件
       parent = parent.$parent
     }
+    // 放入到父级组件的children
     parent.$children.push(vm)
   }
 
   vm.$parent = parent
-  vm.$root = parent ? parent.$root : vm
+  vm.$root = parent ? parent.$root : vm // 设置更节点
 
   vm.$children = []
   vm.$refs = {}
@@ -318,13 +321,14 @@ export function deactivateChildComponent (vm: Component, direct?: boolean) {
     callHook(vm, 'deactivated')
   }
 }
-
+// 钩子函数
 export function callHook (vm: Component, hook: string) {
   // #7573 disable dep collection when invoking lifecycle hooks
   pushTarget()
-  const handlers = vm.$options[hook]
+  const handlers = vm.$options[hook] // 获取钩子
   const info = `${hook} hook`
   if (handlers) {
+    // 钩子函数用数组存储起来，因为mixin和new vue 参数会产生多个钩子函数
     for (let i = 0, j = handlers.length; i < j; i++) {
       invokeWithErrorHandling(handlers[i], vm, null, vm, info)
     }
